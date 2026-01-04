@@ -1,0 +1,47 @@
+# Pterodactyl Wings Configuration Template
+# This file will be overwritten by the panel configuration
+# Please configure your node in the panel and copy the configuration here
+
+debug: false
+uuid: ""
+token_id: ""
+token: ""
+api:
+  host: "0.0.0.0"
+  port: 8080
+  ssl:
+    enabled: false
+    cert: "/etc/letsencrypt/live/your-domain.com/fullchain.pem"
+    key: "/etc/letsencrypt/live/your-domain.com/privkey.pem"
+  upload_limit: 100
+system:
+  data: "/var/lib/pterodactyl/volumes"
+  sftp:
+    bind: "0.0.0.0:2022"
+  docker:
+    network: "pterodactyl_nw"
+    interface: "172.18.0.1"
+    timezone: "UTC"
+  paths:
+    docker: "/usr/bin/docker"
+    compose: "/usr/local/bin/docker-compose"
+
+# Advanced configuration options
+# Uncomment and modify as needed
+
+# allow_docker_logs: false
+# docker_container_limit: 100
+# disk_check_interval: 60
+# activity_send_interval: 30
+# clear_task_timeout: 1200
+# clear_task_interval: 3600
+
+# Backup configuration
+# backups:
+#   path: "/var/lib/pterodactyl/backups"
+#   max_backups: 10
+
+# Remote download settings
+# remote:
+#   max_download_size: 10
+#   timeout: 300

@@ -1,0 +1,37 @@
+[Unit]
+Description=Pterodactyl Wings Daemon
+After=docker.service
+Requires=docker.service
+PartOf=docker.service
+Wants=network-online.target
+
+[Service]
+User=root
+Group=root
+WorkingDirectory=/etc/pterodactyl
+LimitNOFILE=4096
+LimitNPROC=4096
+PIDFile=/var/run/wings/daemon.pid
+ExecStart=/usr/local/bin/wings
+Restart=on-failure
+StartLimitInterval=180
+StartLimitBurst=30
+RestartSec=5s
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/etc/pterodactyl /var/lib/pterodactyl /var/run/wings /tmp
+
+# Resource limits
+MemoryMax=2G
+CPUQuota=200%
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=wings
+
+[Install]
+WantedBy=multi-user.target
