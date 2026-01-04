@@ -19,8 +19,31 @@ INSTALL_DIR="/var/www/pterodactyl"
 CONFIG_DIR="/etc/pterodactyl"
 WINGS_CONFIG_DIR="/etc/pterodactyl"
 LOG_FILE="/var/log/pterodactyl-installer.log"
+
+# Repository URLs - explicitly set to avoid any issues
 PANEL_REPO="https://github.com/pterodactyl/panel.git"
 WINGS_REPO="https://github.com/pterodactyl/wings.git"
+
+# Function to validate repository URLs
+validate_repositories() {
+    print_status "Validating repository URLs..."
+    
+    # Validate Panel repository
+    if [ -z "$PANEL_REPO" ]; then
+        print_error "Panel repository URL is not set"
+        PANEL_REPO="https://github.com/pterodactyl/panel.git"
+        print_status "Set PANEL_REPO to: $PANEL_REPO"
+    fi
+    
+    # Test if repository is accessible
+    if ! git ls-remote "$PANEL_REPO" >/dev/null 2>&1; then
+        print_error "Panel repository is not accessible: $PANEL_REPO"
+        return 1
+    fi
+    
+    print_status "Panel repository is valid: $PANEL_REPO"
+    return 0
+}
 
 # Logging function
 log() {
@@ -294,6 +317,9 @@ install_panel() {
     mkdir -p "$INSTALL_DIR"
     cd "$INSTALL_DIR"
     
+    # Set repository URL explicitly to avoid any scope issues
+    PANEL_REPO="https://github.com/pterodactyl/panel.git"
+    
     # Validate repository URL
     if [ -z "$PANEL_REPO" ]; then
         print_error "Panel repository URL is not set"
@@ -302,7 +328,10 @@ install_panel() {
     
     print_status "Using repository: $PANEL_REPO"
     
-    # Clone the repository
+    # Debug: Show the actual repository URL
+    echo "DEBUG: Repository URL = '$PANEL_REPO'"
+    
+    # Clone repository
     if [ -d "$INSTALL_DIR/.git" ]; then
         print_status "Repository exists, updating..."
         git pull origin latest || {
@@ -311,10 +340,11 @@ install_panel() {
         }
     else
         print_status "Cloning fresh repository..."
-        git clone "$PANEL_REPO" . || {
+        # Use the explicit URL to avoid any variable issues
+        git clone "https://github.com/pterodactyl/panel.git" . || {
             print_error "Failed to clone repository"
             print_status "Please check your internet connection"
-            print_status "Repository URL: $PANEL_REPO"
+            print_status "Repository URL: https://github.com/pterodactyl/panel.git"
             return 1
         }
         git checkout latest || {
@@ -919,6 +949,9 @@ main_install_panel() {
     check_root
     detect_os
     check_supported_os || exit 1
+    
+    # Validate repositories before proceeding
+    validate_repositories || exit 1
     
     # Create directories
     mkdir -p "$CONFIG_DIR"

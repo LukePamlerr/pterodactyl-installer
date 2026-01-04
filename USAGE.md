@@ -120,12 +120,20 @@ The installer includes specific fixes for Ubuntu 24.04:
 
 **Issue: Repository 'does not exist'**
 ```bash
-# ✅ FIXED: This error is now resolved
-# The installer will:
-# 1. Validate repository URL before cloning
-# 2. Show the repository being used
-# 3. Provide clear error messages if cloning fails
-# 4. Verify required files are present after cloning
+# ✅ FIXED: This error is now resolved with multiple layers of protection
+# The installer now:
+# 1. Validates repository URL before cloning
+# 2. Tests repository accessibility
+# 3. Shows repository being used
+# 4. Provides clear error messages if cloning fails
+# 5. Verifies required files are present after cloning
+
+# If you still get this error, run the debug script:
+./debug-install.sh
+
+# Or run installer with debug mode:
+sudo bash -x ./pterodactyl-installer.sh install-panel
+
 # Repository used: https://github.com/pterodactyl/panel.git
 ```
 
