@@ -137,23 +137,11 @@ install_basic_deps() {
             apt install -y curl wget git unzip zip software-properties-common \
                 apt-transport-https ca-certificates gnupg lsb-release \
                 build-essential nginx redis-server
-            ;;
-        arch)
-            pacman -S --noconfirm curl wget git unzip zip nginx redis \
-                base-devel
-            ;;
-    esac
-}
-
-# Install PHP and required extensions
-install_php() {
-    print_status "Installing PHP and required extensions..."
-    
-    case $OS in
-        ubuntu|debian)
+            
             # Add PHP repository for Ubuntu
             if [ "$OS" = "ubuntu" ]; then
                 apt install -y software-properties-common
+                # For Ubuntu 24.04, use Ondrej's PPA which supports all Ubuntu versions
                 LC_ALL=C.UTF-8 add-apt-repository -y ppa:ondrej/php
                 apt update
             fi
@@ -164,6 +152,12 @@ install_php() {
                 php8.2-xml php8.2-bcmath php8.2-zip php8.2-tokenizer \
                 php8.2-redis php8.2-dom php8.2-intl php8.2-fileinfo \
                 php8.2-opcache php8.2-pdo php8.2-pdo-mysql composer
+            
+            # Ensure PHP-FPM service name is correct for Ubuntu 24.04
+            if [ "$OS_VERSION" = "24.04" ]; then
+                systemctl enable php8.2-fpm
+                systemctl start php8.2-fpm
+            fi
             ;;
         arch)
             # Install PHP and extensions

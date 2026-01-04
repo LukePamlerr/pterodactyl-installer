@@ -12,9 +12,17 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-# Installer URL
-INSTALLER_URL="https://raw.githubusercontent.com/pterodactyl-installer/pterodactyl-installer/main/pterodactyl-installer.sh"
-INSTALLER_FILE="/tmp/pterodactyl-installer.sh"
+# Installer URL - Multiple options available
+# Option 1: Use local file (recommended for testing)
+INSTALLER_FILE="./pterodactyl-installer.sh"
+
+# Option 2: Use a working repository URL (uncomment to use)
+# INSTALLER_URL="https://raw.githubusercontent.com/vilhelmprytz/pterodactyl-installer/main/pterodactyl-installer.sh"
+# INSTALLER_FILE="/tmp/pterodactyl-installer.sh"
+
+# Option 3: Use your own repository (replace YOUR_USERNAME)
+# INSTALLER_URL="https://raw.githubusercontent.com/YOUR_USERNAME/pterodactyl-installer/main/pterodactyl-installer.sh"
+# INSTALLER_FILE="/tmp/pterodactyl-installer.sh"
 
 # Print header
 print_header() {
@@ -35,7 +43,21 @@ check_root() {
 
 # Download installer
 download_installer() {
-    echo -e "${GREEN}[INFO]${NC} Downloading Pterodactyl installer..."
+    # Check if using local file
+    if [ -f "$INSTALLER_FILE" ] && [ "$INSTALLER_FILE" = "./pterodactyl-installer.sh" ]; then
+        echo -e "${GREEN}[INFO]${NC} Using local installer file: $INSTALLER_FILE"
+        return 0
+    fi
+    
+    # Check if INSTALLER_URL is set
+    if [ -z "$INSTALLER_URL" ]; then
+        echo -e "${RED}[ERROR]${NC} INSTALLER_URL is not set"
+        echo -e "${YELLOW}[HELP]${NC} Please edit install.sh and set INSTALLER_URL"
+        echo "Example: INSTALLER_URL=\"https://raw.githubusercontent.com/YOUR_USERNAME/pterodactyl-installer/main/pterodactyl-installer.sh\""
+        exit 1
+    fi
+    
+    echo -e "${GREEN}[INFO]${NC} Downloading Pterodactyl installer from: $INSTALLER_URL"
     
     if command -v curl >/dev/null 2>&1; then
         curl -fsSL "$INSTALLER_URL" -o "$INSTALLER_FILE"
@@ -47,7 +69,15 @@ download_installer() {
         exit 1
     fi
     
+    # Verify download was successful
+    if [ ! -f "$INSTALLER_FILE" ]; then
+        echo -e "${RED}[ERROR]${NC} Failed to download installer"
+        echo "Please check the URL and your internet connection"
+        exit 1
+    fi
+    
     chmod +x "$INSTALLER_FILE"
+    echo -e "${GREEN}[INFO]${NC} Installer downloaded successfully"
 }
 
 # Execute installer
