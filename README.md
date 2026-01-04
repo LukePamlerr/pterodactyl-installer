@@ -36,7 +36,7 @@ A comprehensive, multi-distribution installer script for Pterodactyl Panel that 
 
 ```bash
 # Download the installer
-wget https://raw.githubusercontent.com/your-repo/pterodactyl-installer/main/pterodactyl-installer.sh
+wget https://raw.githubusercontent.com/LukePamlerr/pterodactyl-installer/main/pterodactyl-installer.sh
 
 # Make it executable
 chmod +x pterodactyl-installer.sh
@@ -48,7 +48,7 @@ sudo ./pterodactyl-installer.sh
 ### One-line Installation
 
 ```bash
-bash <(curl -s https://raw.githubusercontent.com/your-repo/pterodactyl-installer/main/pterodactyl-installer.sh)
+bash <(curl -s https://raw.githubusercontent.com/LukePamlerr/pterodactyl-installer/main/pterodactyl-installer.sh)
 ```
 
 ## Usage
