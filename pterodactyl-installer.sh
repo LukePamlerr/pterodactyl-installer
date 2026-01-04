@@ -226,11 +226,33 @@ create_database() {
     # Generate random password
     DB_PASSWORD=$(openssl rand -base64 32)
     
-    # Create database and user
-    mysql -u root -e "CREATE DATABASE panel;"
-    mysql -u root -e "CREATE USER 'pterodactyl'@'127.0.0.1' IDENTIFIED BY '$DB_PASSWORD';"
-    mysql -u root -e "GRANT ALL PRIVILEGES ON panel.* TO 'pterodactyl'@'127.0.0.1' WITH GRANT OPTION;"
-    mysql -u root -e "FLUSH PRIVILEGES;"
+    # Check if database already exists
+    if mysql -u root -e "USE panel;" 2>/dev/null; then
+        print_warning "Database 'panel' already exists"
+        read -p "Do you want to drop the existing database and recreate it? (y/N): " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            mysql -u root -e "DROP DATABASE panel;"
+            print_status "Existing database dropped"
+        else
+            print_status "Using existing database"
+            # Get existing password or ask for new one
+            read -s -p "Enter existing database password for pterodactyl user: " DB_PASSWORD_INPUT
+            if [ -n "$DB_PASSWORD_INPUT" ]; then
+                DB_PASSWORD="$DB_PASSWORD_INPUT"
+            fi
+        fi
+    fi
+    
+    # Create database if it doesn't exist
+    mysql -u root -e "CREATE DATABASE IF NOT EXISTS panel;" 2>/dev/null
+    
+    # Create user if it doesn't exist
+    mysql -u root -e "CREATE USER IF NOT EXISTS 'pterodactyl'@'127.0.0.1' IDENTIFIED BY '$DB_PASSWORD';" 2>/dev/null
+    
+    # Grant privileges
+    mysql -u root -e "GRANT ALL PRIVILEGES ON panel.* TO 'pterodactyl'@'127.0.0.1' WITH GRANT OPTION;" 2>/dev/null
+    mysql -u root -e "FLUSH PRIVILEGES;" 2>/dev/null
     
     # Save database credentials
     echo "DB_PASSWORD=$DB_PASSWORD" > "$CONFIG_DIR/database.conf"
@@ -346,6 +368,48 @@ EOF
     chown -R www-data:www-data "$INSTALL_DIR"
     chmod -R 755 "$INSTALL_DIR/storage"
     chmod -R 755 "$INSTALL_DIR/bootstrap/cache"
+}
+
+# Configure SSL certificates
+configure_ssl() {
+    print_status "Configuring SSL certificates..."
+    
+    # Get domain from user
+    read -p "Enter your domain name (e.g., example.com): " DOMAIN
+    if [ -z "$DOMAIN" ]; then
+        print_error "Domain name is required"
+        return 1
+    fi
+    
+    # Install Certbot if not present
+    if ! command -v certbot >/dev/null 2>&1; then
+        print_status "Installing Certbot for Let's Encrypt..."
+        case $OS in
+            ubuntu|debian)
+                apt install -y certbot python3-certbot-nginx
+                ;;
+            arch)
+                pacman -S --noconfirm certbot certbot-nginx
+                ;;
+        esac
+    fi
+    
+    # Stop Nginx temporarily
+    systemctl stop nginx 2>/dev/null || true
+    
+    # Get SSL certificate
+    print_status "Obtaining SSL certificate for $DOMAIN..."
+    certbot --nginx -d "$DOMAIN" --non-interactive --agree-tos --email admin@"$DOMAIN"
+    
+    # Setup auto-renewal
+    (crontab -l 2>/dev/null; echo "0 12 * * * /usr/bin/certbot renew --quiet") | crontab -
+    
+    # Start Nginx
+    systemctl start nginx
+    
+    print_status "SSL certificate installed and configured for $DOMAIN"
+    print_status "Auto-renewal has been configured"
+    print_warning "Make sure your domain points to this server's IP"
 }
 
 # Configure web server
@@ -897,15 +961,16 @@ show_menu() {
     echo "1) Install Pterodactyl Panel"
     echo "2) Install Pterodactyl Wings"
     echo "3) Install Both Panel & Wings"
-    echo "4) Update Pterodactyl Panel"
-    echo "5) Update Pterodactyl Wings"
-    echo "6) Update Both Panel & Wings"
-    echo "7) Uninstall Pterodactyl Panel"
-    echo "8) Uninstall Pterodactyl Wings"
-    echo "9) Uninstall Both Panel & Wings"
-    echo "10) Exit"
+    echo "4) Configure SSL Certificate"
+    echo "5) Update Pterodactyl Panel"
+    echo "6) Update Pterodactyl Wings"
+    echo "7) Update Both Panel & Wings"
+    echo "8) Uninstall Pterodactyl Panel"
+    echo "9) Uninstall Pterodactyl Wings"
+    echo "10) Uninstall Both Panel & Wings"
+    echo "11) Exit"
     echo ""
-    read -p "Enter your choice [1-10]: " choice
+    read -p "Enter your choice [1-11]: " choice
     
     case $choice in
         1)
@@ -919,26 +984,29 @@ show_menu() {
             install_wings
             ;;
         4)
-            main_update_panel
+            configure_ssl
             ;;
         5)
-            update_wings
+            main_update_panel
             ;;
         6)
-            main_update_panel
             update_wings
             ;;
         7)
-            main_uninstall_panel
+            main_update_panel
+            update_wings
             ;;
         8)
-            main_uninstall_wings
+            main_uninstall_panel
             ;;
         9)
-            main_uninstall_panel
             main_uninstall_wings
             ;;
         10)
+            main_uninstall_panel
+            main_uninstall_wings
+            ;;
+        11)
             print_status "Goodbye!"
             exit 0
             ;;
@@ -964,6 +1032,9 @@ else
             main_install_panel
             install_wings
             ;;
+        configure-ssl)
+            configure_ssl
+            ;;
         update-panel)
             main_update_panel
             ;;
@@ -984,6 +1055,9 @@ else
             main_uninstall_panel
             main_uninstall_wings
             ;;
+        ssl)
+            configure_ssl
+            ;;
         install)
             main_install_panel
             ;;
@@ -994,7 +1068,7 @@ else
             main_uninstall_panel
             ;;
         *)
-            echo "Usage: $0 [install-panel|install-wings|install-both|update-panel|update-wings|update-both|uninstall-panel|uninstall-wings|uninstall-both]"
+            echo "Usage: $0 [install-panel|install-wings|install-both|configure-ssl|update-panel|update-wings|update-both|uninstall-panel|uninstall-wings|uninstall-both|ssl]"
             echo "           $0 [install|update|uninstall] (legacy - panel only)"
             exit 1
             ;;

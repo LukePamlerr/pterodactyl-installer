@@ -42,13 +42,14 @@ Please select an option:
 1) Install Pterodactyl Panel
 2) Install Pterodactyl Wings  
 3) Install Both Panel & Wings
-4) Update Pterodactyl Panel
-5) Update Pterodactyl Wings
-6) Update Both Panel & Wings
-7) Uninstall Pterodactyl Panel
-8) Uninstall Pterodactyl Wings
-9) Uninstall Both Panel & Wings
-10) Exit
+4) Configure SSL Certificate
+5) Update Pterodactyl Panel
+6) Update Pterodactyl Wings
+7) Update Both Panel & Wings
+8) Uninstall Pterodactyl Panel
+9) Uninstall Pterodactyl Wings
+10) Uninstall Both Panel & Wings
+11) Exit
 ```
 
 ## 🛠️ Command Line Options
@@ -62,6 +63,10 @@ sudo ./pterodactyl-installer.sh install-wings
 
 # Both Panel and Wings
 sudo ./pterodactyl-installer.sh install-both
+
+# SSL Configuration
+sudo ./pterodactyl-installer.sh configure-ssl
+sudo ./pterodactyl-installer.sh ssl
 
 # Updates
 sudo ./pterodactyl-installer.sh update-panel
@@ -113,9 +118,19 @@ The installer includes specific fixes for Ubuntu 24.04:
 
 ### Common Issues & Solutions
 
+**Issue: Database 'panel' already exists**
+```bash
+# ✅ FIXED: This error is now handled automatically
+# The installer will:
+# 1. Detect existing database
+# 2. Ask if you want to drop and recreate it
+# 3. Or use existing database with your password
+# Just follow the prompts when running the installer
+```
+
 **Issue: install_php: command not found**
 ```bash
-# Solution: This error is now resolved
+# ✅ FIXED: This error is now resolved
 # The PHP installation is included in install_basic_deps function
 # Just run the installer normally:
 sudo ./pterodactyl-installer.sh
@@ -127,9 +142,18 @@ sudo ./pterodactyl-installer.sh
 sudo ./pterodactyl-installer.sh
 ```
 
+**Issue: SSL Certificate Not Working**
+```bash
+# Solution: Use built-in SSL configuration
+sudo ./pterodactyl-installer.sh configure-ssl
+
+# Or manual setup
+sudo certbot --nginx -d your-domain.com
+```
+
 **Issue: PHP Repository Not Found (Ubuntu 24.04)**
 ```bash
-# Solution: Add PPA manually
+# Fix: Add PPA manually
 sudo add-apt-repository -y ppa:ondrej/php
 sudo apt update
 ```
@@ -231,8 +255,11 @@ If you encounter issues:
 ## ✅ What's Fixed
 
 - ❌ ~~Repository "does not exist"~~ → ✅ **Fixed**
+- ❌ ~~Database 'panel' already exists~~ → ✅ **Fixed**
+- ❌ ~~install_php command not found~~ → ✅ **Fixed**
 - ❌ ~~Ubuntu 24.04 compatibility~~ → ✅ **Fixed**  
 - ❌ ~~PHP-FPM service issues~~ → ✅ **Fixed**
+- ❌ ~~SSL certificate setup~~ → ✅ **Added**
 - ❌ ~~Complex setup process~~ → ✅ **Simplified**
 
 The installer now works perfectly on Ubuntu 24.04 and all supported distributions!
