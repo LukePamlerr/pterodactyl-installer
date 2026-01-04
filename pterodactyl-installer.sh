@@ -386,30 +386,69 @@ configure_ssl() {
         print_status "Installing Certbot for Let's Encrypt..."
         case $OS in
             ubuntu|debian)
-                apt install -y certbot python3-certbot-nginx
+                # Update package list first
+                apt update
+                # Install certbot with multiple package options
+                apt install -y certbot python3-certbot-nginx python3-certbot || \
+                apt install -y certbot python3-certbot-nginx || \
+                apt install -y certbot
                 ;;
             arch)
-                pacman -S --noconfirm certbot certbot-nginx
+                pacman -S --noconfirm certbot certbot-nginx || \
+                pacman -S --noconfirm certbot
                 ;;
         esac
     fi
     
-    # Stop Nginx temporarily
-    systemctl stop nginx 2>/dev/null || true
+    # Verify certbot is installed
+    if ! command -v certbot >/dev/null 2>&1; then
+        print_error "Failed to install Certbot"
+        print_status "Please install Certbot manually:"
+        print_status "sudo apt install certbot python3-certbot-nginx"
+        return 1
+    fi
+    
+    # Update Nginx configuration with domain
+    sed -i "s/pterodactyl.example.com/$DOMAIN/g" /etc/nginx/sites-available/pterodactyl.conf
+    
+    # Test Nginx configuration
+    nginx -t
+    if [ $? -ne 0 ]; then
+        print_error "Nginx configuration test failed"
+        return 1
+    fi
+    
+    # Restart Nginx to apply domain changes
+    systemctl restart nginx
     
     # Get SSL certificate
     print_status "Obtaining SSL certificate for $DOMAIN..."
-    certbot --nginx -d "$DOMAIN" --non-interactive --agree-tos --email admin@"$DOMAIN"
+    certbot --nginx -d "$DOMAIN" --non-interactive --agree-tos --email "admin@$DOMAIN" --redirect
     
-    # Setup auto-renewal
-    (crontab -l 2>/dev/null; echo "0 12 * * * /usr/bin/certbot renew --quiet") | crontab -
-    
-    # Start Nginx
-    systemctl start nginx
-    
-    print_status "SSL certificate installed and configured for $DOMAIN"
-    print_status "Auto-renewal has been configured"
-    print_warning "Make sure your domain points to this server's IP"
+    # Check if certificate was obtained successfully
+    if [ $? -eq 0 ]; then
+        print_status "SSL certificate obtained successfully"
+        
+        # Setup auto-renewal
+        (crontab -l 2>/dev/null; echo "0 12 * * * /usr/bin/certbot renew --quiet") | crontab -
+        
+        print_status "Auto-renewal has been configured"
+        print_warning "Make sure your domain points to this server's IP"
+        
+        # Update panel URL in .env file
+        if [ -f "$INSTALL_DIR/.env" ]; then
+            sed -i "s|APP_URL=.*|APP_URL=https://$DOMAIN|g" "$INSTALL_DIR/.env"
+            print_status "Panel URL updated to https://$DOMAIN"
+        fi
+        
+    else
+        print_error "Failed to obtain SSL certificate"
+        print_status "Please check:"
+        print_status "1. Domain $DOMAIN points to this server"
+        print_status "2. Port 80 and 443 are open"
+        print_status "3. Nginx is running properly"
+        return 1
+    fi
 }
 
 # Configure web server

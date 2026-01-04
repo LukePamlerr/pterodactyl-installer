@@ -51,6 +51,26 @@ APP_URL=https://your-domain.com
 
 ## 🛠️ SSL Troubleshooting
 
+### Issue: certbot: command not found
+```bash
+# ✅ FIXED: The installer now handles this automatically
+# Manual installation if needed:
+sudo apt update
+sudo apt install certbot python3-certbot-nginx
+
+# For Ubuntu 20.04/22.04:
+sudo apt install certbot python3-certbot-nginx
+
+# For Ubuntu 24.04:
+sudo apt install certbot python3-certbot-nginx python3-certbot
+
+# For Debian:
+sudo apt install certbot python3-certbot-nginx
+
+# For Arch Linux:
+sudo pacman -S certbot certbot-nginx
+```
+
 ### Issue: Domain not pointing to server
 ```bash
 # Check DNS

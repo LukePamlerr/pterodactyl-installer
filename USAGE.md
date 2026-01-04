@@ -142,6 +142,18 @@ sudo ./pterodactyl-installer.sh
 sudo ./pterodactyl-installer.sh
 ```
 
+**Issue: certbot: command not found**
+```bash
+# ✅ FIXED: This error is now handled automatically
+# The installer will:
+# 1. Install certbot with multiple package options
+# 2. Verify installation before proceeding
+# 3. Provide manual installation instructions if needed
+# If still fails, install manually:
+sudo apt update
+sudo apt install certbot python3-certbot-nginx
+```
+
 **Issue: SSL Certificate Not Working**
 ```bash
 # Solution: Use built-in SSL configuration
@@ -257,6 +269,7 @@ If you encounter issues:
 - ❌ ~~Repository "does not exist"~~ → ✅ **Fixed**
 - ❌ ~~Database 'panel' already exists~~ → ✅ **Fixed**
 - ❌ ~~install_php command not found~~ → ✅ **Fixed**
+- ❌ ~~certbot: command not found~~ → ✅ **Fixed**
 - ❌ ~~Ubuntu 24.04 compatibility~~ → ✅ **Fixed**  
 - ❌ ~~PHP-FPM service issues~~ → ✅ **Fixed**
 - ❌ ~~SSL certificate setup~~ → ✅ **Added**
