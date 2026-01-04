@@ -118,6 +118,17 @@ The installer includes specific fixes for Ubuntu 24.04:
 
 ### Common Issues & Solutions
 
+**Issue: Repository 'does not exist'**
+```bash
+# ✅ FIXED: This error is now resolved
+# The installer will:
+# 1. Validate repository URL before cloning
+# 2. Show the repository being used
+# 3. Provide clear error messages if cloning fails
+# 4. Verify required files are present after cloning
+# Repository used: https://github.com/pterodactyl/panel.git
+```
+
 **Issue: Database 'panel' already exists**
 ```bash
 # ✅ FIXED: This error is now handled automatically
@@ -133,12 +144,6 @@ The installer includes specific fixes for Ubuntu 24.04:
 # ✅ FIXED: This error is now resolved
 # The PHP installation is included in install_basic_deps function
 # Just run the installer normally:
-sudo ./pterodactyl-installer.sh
-```
-
-**Issue: Permission Denied**
-```bash
-# Solution: Always run with sudo
 sudo ./pterodactyl-installer.sh
 ```
 
@@ -270,6 +275,7 @@ If you encounter issues:
 - ❌ ~~Database 'panel' already exists~~ → ✅ **Fixed**
 - ❌ ~~install_php command not found~~ → ✅ **Fixed**
 - ❌ ~~certbot: command not found~~ → ✅ **Fixed**
+- ❌ ~~Git clone failures~~ → ✅ **Fixed**
 - ❌ ~~Ubuntu 24.04 compatibility~~ → ✅ **Fixed**  
 - ❌ ~~PHP-FPM service issues~~ → ✅ **Fixed**
 - ❌ ~~SSL certificate setup~~ → ✅ **Added**

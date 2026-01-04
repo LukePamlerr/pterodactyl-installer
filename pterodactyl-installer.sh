@@ -294,19 +294,46 @@ install_panel() {
     mkdir -p "$INSTALL_DIR"
     cd "$INSTALL_DIR"
     
+    # Validate repository URL
+    if [ -z "$PANEL_REPO" ]; then
+        print_error "Panel repository URL is not set"
+        return 1
+    fi
+    
+    print_status "Using repository: $PANEL_REPO"
+    
     # Clone the repository
     if [ -d "$INSTALL_DIR/.git" ]; then
         print_status "Repository exists, updating..."
-        git pull origin latest
+        git pull origin latest || {
+            print_error "Failed to update repository"
+            return 1
+        }
     else
         print_status "Cloning fresh repository..."
-        git clone "$OFFICIAL_REPO" .
-        git checkout latest
+        git clone "$PANEL_REPO" . || {
+            print_error "Failed to clone repository"
+            print_status "Please check your internet connection"
+            print_status "Repository URL: $PANEL_REPO"
+            return 1
+        }
+        git checkout latest || {
+            print_warning "Failed to checkout 'latest' branch, using default branch"
+        }
+    fi
+    
+    # Verify files were downloaded
+    if [ ! -f "composer.json" ] || [ ! -f ".env.example" ]; then
+        print_error "Repository appears to be incomplete or invalid"
+        print_status "Required files are missing"
+        return 1
     fi
     
     # Set permissions
     chown -R www-data:www-data "$INSTALL_DIR"
     chmod -R 755 "$INSTALL_DIR"
+    
+    print_status "Panel repository cloned successfully"
 }
 
 # Configure Pterodactyl panel
