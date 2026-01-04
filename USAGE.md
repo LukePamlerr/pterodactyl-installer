@@ -113,6 +113,14 @@ The installer includes specific fixes for Ubuntu 24.04:
 
 ### Common Issues & Solutions
 
+**Issue: install_php: command not found**
+```bash
+# Solution: This error is now resolved
+# The PHP installation is included in install_basic_deps function
+# Just run the installer normally:
+sudo ./pterodactyl-installer.sh
+```
+
 **Issue: Permission Denied**
 ```bash
 # Solution: Always run with sudo
@@ -121,22 +129,24 @@ sudo ./pterodactyl-installer.sh
 
 **Issue: PHP Repository Not Found (Ubuntu 24.04)**
 ```bash
-# Solution: Manual PPA addition
+# Solution: Add PPA manually
 sudo add-apt-repository -y ppa:ondrej/php
 sudo apt update
 ```
 
-**Issue: PHP-FPM Not Starting**
+**Issue: PHP-FPM Service Not Starting**
 ```bash
-# Solution: Check and start service
+# Check service status
 sudo systemctl status php8.2-fpm
+
+# Start manually if needed
 sudo systemctl start php8.2-fpm
 sudo systemctl enable php8.2-fpm
 ```
 
 **Issue: Docker Not Installing (Wings)**
 ```bash
-# Solution: Install Docker manually
+# Install Docker manually
 curl -fsSL https://get.docker.com/ | CHANNEL=stable bash
 sudo systemctl enable --now docker
 ```

@@ -797,7 +797,6 @@ main_install_panel() {
     # Installation steps
     update_system
     install_basic_deps
-    install_php
     install_database
     create_database
     install_nodejs
