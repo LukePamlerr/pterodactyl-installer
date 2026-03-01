@@ -126,11 +126,6 @@ After installation, you should:
 4. **Change the default admin password** immediately
 5. **Configure email settings** for notifications
 
-### Default Admin Account
-
-- **Email**: admin@example.com
-- **Password**: Admin123!
-- **⚠️ Change this password immediately!**
 
 ## SSL Configuration
 
