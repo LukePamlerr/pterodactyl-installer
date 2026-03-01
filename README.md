@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Pterodactyl Panel Installer
 
 A comprehensive, multi-distribution installer script for Pterodactyl Panel that supports Ubuntu 20.04/22.04/24.04, Debian 10+, and Arch Linux.
